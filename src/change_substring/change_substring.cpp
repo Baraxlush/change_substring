@@ -5,79 +5,80 @@
 #include <malloc.h>
 #include <string>
 #include <fstream>
+#include <iostream>
+#include <windows.h>
 
 using namespace std;
 
-FILE* Open_File_To_Read(char *name_file)
+void Replace(const string &inputFileName, const string &outputFileName, const string &stringForChange, const string &stringToChange)
 {
-	FILE *file_inp = fopen(name_file, "r");
-	if (file_inp == NULL)
+	SetConsoleOutputCP(1251);
+	ifstream inputFile;
+	inputFile.open(inputFileName, ifstream::in);
+
+	if (!inputFile.good())
 	{
-		printf("Error: cannot load input file!\n");
-		system("pause");
+		cout << "Error: cannot open input file!" << endl;
 		exit(1);
 	}
-	return file_inp;
-}
 
-FILE* Open_File_To_Write(char *name_file)
-{
-	FILE *file_out = fopen(name_file, "w");
-	if (file_out == NULL)
+	ofstream outputFile;
+	outputFile.open(outputFileName, ofstream::out);
+
+	if (!outputFile.good())
 	{
-		printf("Error: cannot create output file!\n");
-		system("pause");
-		exit(1);
+		cout << "Error: cannot create output file!" << endl;
+		exit(2);
 	}
-	return file_out;
-}
 
-void Change_strings(FILE* input, FILE* output, string string_for_change, string string_to_change)
-{
-	string processed_line;
-	processed_line.reserve(200);
-	int overlap_counter = 0;
-	
-	while (!feof(input))
+	string processingString, resultString;
+	while (!inputFile.eof())
 	{
-		char line_for_subsidiary_implementation[500];
-		fgets(line_for_subsidiary_implementation, 500, input);
-		processed_line = line_for_subsidiary_implementation;
-		for (unsigned int i = 0; i < processed_line.size(); i++)
+		getline(inputFile, processingString);
+
+		int overlapCounter = 0;
+		for (unsigned int i = 0; i < processingString.size(); ++i)
 		{
-			if (processed_line[i] != string_for_change[overlap_counter])
-				overlap_counter = 0;
-
+			if (processingString[i] != stringForChange[overlapCounter])
+			{
+				overlapCounter = 0;
+				resultString.push_back(processingString[i]);
+			}
 			else
 			{
-				overlap_counter++;
-				if (overlap_counter == string_for_change.size())
+				++overlapCounter;
+				resultString.push_back(processingString[i]);
+				if (overlapCounter == stringForChange.size())
 				{
-					processed_line.erase(i + 1 - string_for_change.size(), string_for_change.size());
-					processed_line.insert(i + 1 - string_for_change.size(), string_to_change);
-					overlap_counter = 0;
-					i = i - string_for_change.size() + string_to_change.size();
+					resultString.erase(resultString.end() - stringForChange.size(), resultString.end());
+					resultString.insert(resultString.size(), stringToChange);
+					overlapCounter = 0;
 				}
 			}
 		}
-		fprintf(output, "%s", processed_line.c_str());
+
+		cout << resultString << endl;
+		processingString.clear();
+		outputFile << resultString;
+		if (!inputFile.eof())
+		{
+			outputFile << endl;
+		}
 	}
-	fclose(input);
-	fclose(output);
 }
 
 int main(int argc, char *argv[])
-{
-	char *file_name_inpup = argv[1];
-	FILE *file_inp = Open_File_To_Read(file_name_inpup);
-
-	char *file_name_output = argv[2];
-	FILE *file_out = Open_File_To_Write(file_name_output);
-
-	string subline_for_change = argv[3];
-	string subline_to_change = argv[4];
+{	
+	string inputFileName = argv[1];
+	string outputFileName = argv[2];
+	string sublineForChange = argv[3];
+	string sublineToChange = argv[4];
 	
-	Change_strings(file_inp, file_out, subline_for_change, subline_to_change);
+	/*string inputFileName = "file3.txt";
+	string outputFileName = "file3out.txt";
+	string sublineForChange = "мыла";
+	string sublineToChange = "красила";*/
+	Replace(inputFileName, outputFileName, sublineForChange, sublineToChange);
 	return 0;
 }
 
