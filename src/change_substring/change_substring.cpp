@@ -31,35 +31,48 @@ void Replace(const string &inputFileName, const string &outputFileName, const st
 		exit(2);
 	}
 
-	string processingString, resultString;
+	string processingString;
 	while (!inputFile.eof())
 	{
 		getline(inputFile, processingString);
 
-		int overlapCounter = 0;
-		for (unsigned int i = 0; i < processingString.size(); ++i)
+		size_t i = 0;
+		while (i < (processingString.size() - stringForChange.size() + 1))
 		{
-			if (processingString[i] != stringForChange[overlapCounter])
+			bool canChangeSubstring = true;
+			if (processingString[i] == stringForChange[0])
 			{
-				overlapCounter = 0;
-				resultString.push_back(processingString[i]);
+				for (unsigned int j = 1; j < stringForChange.size(); ++j)
+				{
+					if (processingString[i + j] != stringForChange[j])
+					{
+						canChangeSubstring = false;
+						break;
+					}
+				}
+				if (canChangeSubstring)
+				{
+					outputFile << stringToChange;
+					i += stringForChange.size();
+				}
+				else
+				{
+					outputFile << processingString[i];
+					++i;
+				}
 			}
 			else
 			{
-				++overlapCounter;
-				resultString.push_back(processingString[i]);
-				if (overlapCounter == stringForChange.size())
-				{
-					resultString.erase(resultString.end() - stringForChange.size(), resultString.end());
-					resultString.insert(resultString.size(), stringToChange);
-					overlapCounter = 0;
-				}
+				outputFile << processingString[i];
+				++i;
 			}
 		}
-
-		cout << resultString << endl;
+		while (i < processingString.size())
+		{
+			outputFile << processingString[i];
+			++i;
+		}
 		processingString.clear();
-		outputFile << resultString;
 		if (!inputFile.eof())
 		{
 			outputFile << endl;
@@ -74,10 +87,6 @@ int main(int argc, char *argv[])
 	string sublineForChange = argv[3];
 	string sublineToChange = argv[4];
 	
-	/*string inputFileName = "file3.txt";
-	string outputFileName = "file3out.txt";
-	string sublineForChange = "мыла";
-	string sublineToChange = "красила";*/
 	Replace(inputFileName, outputFileName, sublineForChange, sublineToChange);
 	return 0;
 }
