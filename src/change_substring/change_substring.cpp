@@ -32,6 +32,20 @@ void Replace(const string &inputFileName, const string &outputFileName, const st
 	}
 
 	string processingString;
+	if (stringForChange.size() == 0)
+	{
+		while (!inputFile.eof())
+		{
+			getline(inputFile, processingString);
+			outputFile << processingString;
+			if (!inputFile.eof())
+			{
+				outputFile << endl;
+			}
+		}
+		return;
+	}
+
 	while (!inputFile.eof())
 	{
 		getline(inputFile, processingString);
